@@ -21,6 +21,6 @@ class ExampleTest extends TestCase
     public function testThis()
     {
 
-        
+
     }
 }
