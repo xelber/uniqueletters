@@ -4,6 +4,8 @@
 namespace App;
 
 
+use Symfony\Component\Yaml\Yaml;
+
 class XmlParser
 {
     public $xmlContent;
@@ -16,6 +18,35 @@ class XmlParser
         $this->xml = new \SimpleXMLElement($this->xmlContent);;
     }
 
+    public function yaml()
+    {
+
+    }
+
+    public function getAsCsv()
+    {
+        $rows = [];
+        foreach ($this->xml as $key => $property)
+        {
+            $rows[] = $this->getPropertyAaArray($key, $property);
+        }
+
+        return $rows;
+    }
+
+    private function getPropertyAaArray($key, $property)
+    {
+        return [
+            'agentId' => (string)$property->agentID,
+            'uniqueId' => (string)$property->uniqueID,
+            'propertyType' => $key,
+            'listingStatus' => (string)$property->attributes()['status'],
+            'state' => (string)$property->address->state,
+            'displayPrice' => $this->getPrice($property),
+            'dateModified' => $this->getPropertyModDate($property),
+        ];
+    }
+
     public function getList()
     {
         $list = [];
@@ -26,6 +57,14 @@ class XmlParser
         }
 
         return $list;
+    }
+
+    private function getPropertyModDate($property)
+    {
+        $date = (string)$property->attributes()['modTime'];
+        $date = substr_replace($date, ' ', 10, 1);
+
+        return $date;
     }
 
     /**
@@ -63,6 +102,7 @@ class XmlParser
 
     private function getPrice($property)
     {
+        if ( !empty($property->rent) ) return (float)$property->rent;
         if ( empty($property->price->range) ) return (float)$property->price;
 
         $min = (float)$property->price->range->min;

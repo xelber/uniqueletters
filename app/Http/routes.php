@@ -14,3 +14,24 @@
 Route::get('/', function () {
     return view('welcome');
 });
+
+
+Route::get('/question6', function () {
+    $content = file_get_contents(storage_path('sample-reaxml.xml'));
+    $parser = new \App\XmlParser($content);
+    $csv = $parser->getAsCsv();
+
+    $buffer = fopen('php://temp', 'r+');
+
+    foreach ($csv as $line) {
+
+        fputcsv($buffer, $line, ',');
+
+    }
+    rewind($buffer);
+
+    header('Content-Type: application/csv');
+
+    header('Content-Disposition: attachment; filename="properties.csv";');
+    fpassthru($buffer);
+});
